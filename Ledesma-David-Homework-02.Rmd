@@ -9,21 +9,48 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# Question 1
+Every Saturday, at the same time, a primatologist goes and sits in the forest in the morning and listens for titi monkey calls, counting the number of calls they hear in a 2 hour window from 5am to 7am. Based on previous knowledge, she believes that the mean number calls she will hear in that time is 15. Let X represent the appropriate Poisson random variable of the number of calls heard in each monitoring session.
+```{r}
+x <- 0:100
+l = 15
+probset <- dpois(x = x, lambda = l)
+barplot(probset, names.arg = x, 
+        space = 0, xlab = "x", ylab = "Pr(X = x)", 
+        main = paste0("Probability Mass Function\nlambda = ", l))  
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+###1.a. What is the probability that she will hear more than 8 calls during any given session?
+```{r}
+x <- 0:100
+l <- 15
+barplot(ppois(q = x, lambda = l), ylim = 0:1, space = 0, names.arg = x, xlab = "x", 
+        ylab = "Pr(X ≤ x)", main = paste0("Cumulative Probability\nlambda = ", 
+                                          l))
+1- ppois( 8, lambda = l)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+###1.b. What is the probability that she will hear no calls in a session?
+```{r}
+dpois(0, lambda = l)
+```
+
+###1.c. What is the probability that she will hear exactly 3 calls in a session?
+```{r}
+dpois(3, lambda = l)
+```
+
+###1.d. Plot the relevant Poisson mass function over the values in range 0 ≤ x ≤ 30.
+```{r}
+y <- 0:30
+l = 15
+probset <- dpois(x = y, lambda = l)
+barplot(probset, names.arg = y, 
+        space = 0, xlab = "x", ylab = "Pr(X = x)", 
+        main = paste0("Probability Mass Function\nlambda = ", l))
+```
+
+###1.e. Simulate 104 results from this distribution (i.e., 2 years of Saturday monitoring sessions).
+
+
+###1.f. Plot the simulated results using hist() and use xlim() to set the horizontal limits to be from 0 to 30. How does your histogram compare to the shape of the probability mass function you plotted above?
