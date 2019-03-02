@@ -44,13 +44,213 @@ dpois(3, lambda = l)
 ```{r}
 y <- 0:30
 l = 15
-probset <- dpois(x = y, lambda = l)
-barplot(probset, names.arg = y, 
+poisdist <- dpois(x = y, lambda = l)
+barplot(poisdist, names.arg = y, 
         space = 0, xlab = "x", ylab = "Pr(X = x)", 
         main = paste0("Probability Mass Function\nlambda = ", l))
 ```
 
 ###1.e. Simulate 104 results from this distribution (i.e., 2 years of Saturday monitoring sessions).
-
+```{r}
+simulation <- rpois(104, l)
+```
 
 ###1.f. Plot the simulated results using hist() and use xlim() to set the horizontal limits to be from 0 to 30. How does your histogram compare to the shape of the probability mass function you plotted above?
+```{r}
+hist(simulation, xlim = c(0,30))
+```
+
+```{r}
+y <- 0:30
+l = 15
+poisdist <- dpois(x = y, lambda = l)
+barplot(poisdist, names.arg = y, 
+        space = 0, xlab = "x", ylab = "Pr(X = x)", 
+        main = paste0("Probability Mass Function\nlambda = ", l))
+```
+####vs.
+probability mass function
+
+#Question 2
+
+
+```{r}
+library(curl)
+f <- f <- curl("https://raw.githubusercontent.com/difiore/ADA-2019/master/zombies.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+### Calculate the population mean and standard deviation for each quantitative random variable (height, weight, age, number of zombies killed, and years of education).
+
+```{r}
+pop_mean <- function(x) {sum(x)/length(x)}
+standdev <- function(x) {
+  sqrt(sum((x - mean(x))^2)/length(x))}
+
+hgt<-pop_mean(d$height)
+wgt<-pop_mean(d$weight)
+ag<-pop_mean(d$age)
+zom<-pop_mean(d$zombies_killed)
+ed<-pop_mean(d$years_of_education)
+
+hgt2<-standdev(d$height)
+wgt2<-standdev(d$weight)
+ag2<-standdev(d$age)
+zom2<-standdev(d$zombies_killed)
+ed2<-standdev(d$years_of_education)
+```
+
+### Use {ggplot} and make boxplots of each of these variable by gender.
+```{r}
+library(ggplot2)
+library(ggpubr)
+theme_set(theme_pubr())
+
+ggpot<- d[, c(4, 5, 6, 7, 8, 10)]
+
+?geom_boxplot
+par(mfrow = c(2, 3))
+phgt<-ggplot(ggpot, aes(x=NULL, height, color=gender)) +
+  geom_boxplot()
+phgt
+pwgt<-ggplot(ggpot, aes(x=NULL, weight, color=gender)) +
+  geom_boxplot()
+pwgt
+pag<-ggplot(ggpot, aes(x=NULL, age, color=gender)) +
+  geom_boxplot()
+pag
+pzom<-ggplot(ggpot, aes(x=NULL, zombies_killed, color=gender)) +
+  geom_boxplot()
+pzom
+ped<-ggplot(ggpot, aes(x=NULL, years_of_education, color=gender)) +
+  geom_boxplot()
+ped
+
+figure <- ggarrange(phgt, pwgt, pag, pzom, ped,
+                    labels = c("Height", "Weight", "Age", "Zombies killed", "Years educated"),
+                    ncol = 2, nrow = 3)
+figure
+```
+
+### Use {ggplot} and make scatterplots of height and weight in relation to age. 
+```{r}
+twoc<-ggplot(d, aes(x=weight, y=height, color=age)) + geom_point()
+twoc
+```
+
+### Do these variables seem to be related? In what way? Weight and height have a linear relationship. It also appears that on average older individuals are taller and weight more. 
+
+## Using histograms and Q-Q plots, check whether the quantitative variables seem to be drawn from a normal distribution. 
+
+```{r}
+lhgt<-length(d$height)
+rhgt <- rnorm(lhgt, hgt, hgt2)
+par(mfrow = c(2, 2))
+hist(rhgt, probability = TRUE)
+hist(d$height, probability = TRUE)
+qqnorm(d$height, main = "Normal QQ plot Height")
+qqline(d$height, col = "gray")
+
+lwgt<-length(d$weight)
+rwgt <- rnorm(lwgt, wgt, wgt2)
+par(mfrow = c(2, 2))
+hist(rwgt, probability = TRUE)
+hist(d$weight, probability = TRUE)
+qqnorm(d$weight, main = "Normal QQ plot Weight")
+qqline(d$weight, col = "gray")
+
+lage<-length(d$age)
+rag <- rnorm(lage, ag, ag2)
+par(mfrow = c(2, 2))
+hist(rag, probability = TRUE)
+hist(d$age, probability = TRUE)
+qqnorm(d$age, main = "Normal QQ plot Age")
+qqline(d$age, col = "gray")
+
+lzom<-length(d$zombies_killed)
+rzom <- rnorm(lzom, zom, zom2)
+par(mfrow = c(2, 2))
+hist(rzom, probability = TRUE)
+hist(d$zombies_killed, probability = TRUE)
+qqnorm(d$zombies_killed, main = "Normal QQ plot Zombies killed")
+qqline(d$zombies_killed, col = "gray")
+
+led<-length(d$years_of_education)
+red <- rnorm(led, ed, ed2)
+par(mfrow = c(2, 2))
+hist(red, probability = TRUE)
+hist(d$years_of_education, probability = TRUE)
+qqnorm(d$years_of_education, main = "Normal QQ plot Years educated")
+qqline(d$years_of_education, col = "gray")
+```
+
+###Which seem to be and which do not? The numer of zombied killed and the years of education do not seem to be normally distributed.
+
+##Now use the sample() function to sample ONE subset of 30 zombies (without replacement) from this population and calculate the mean and sample standard deviation for each variable. Also estimate the standard error for each variable and construct the 95% confidence interval for each mean. Note that for the variables that are not drawn from the normal distribution, you will need to base your estimate of the CIs on some different distribution!
+
+```{r}
+library(dplyr)
+
+zomsamp<-sample_n(d, 30, replace = FALSE) #sample ONE subset of 30 zombies (without replacement)
+
+zsv <- function(x) {
+  sum((x - mean(x))^2)/length(x)-1
+  }
+zse <- function(x) {
+  sqrt(zsv(x))/length(x)
+  }
+
+zsd <- function(x) {
+  sqrt(sum((x - mean(x))^2)/length(x)-1)
+  }
+
+zhgt<-mean(zomsamp$height)
+zhgt2<-zsd(zomsamp$height)
+upper <- zhgt + qnorm(0.975, mean = 0, sd = zhgt2) * zse(x)
+lower <-zhgt + qnorm(0.025, mean = 0, sd = zhgt2) * zse(x)
+cihgt <- c(lower, upper)
+cihgt
+
+zwgt<-mean(zomsamp$weight)
+zwgt2<-zsd(zomsamp$weight)
+upper <- zwgt + qnorm(0.975, mean = 0, sd = zwgt2) * zse(x)
+lower <-zwgt + qnorm(0.025, mean = 0, sd = zwgt2) * zse(x)
+ciwgt <- c(lower, upper)
+ciwgt
+
+zag<-mean(zomsamp$age)
+zag2<-zsd(zomsamp$age)
+upper <- zag + qnorm(0.975, mean = 0, sd = zag2) * zse(x)
+lower <-zag + qnorm(0.025, mean = 0, sd = zag2) * zse(x)
+cizag <- c(lower, upper)
+cizag
+
+zzom<-mean(zomsamp$zombies_killed)
+zzom2<-zsd(zomsamp$zombies_killed)
+quantile(zomsamp$zombies_killed, c(0.025, 0.975))
+hist(zomsamp$zombies_killed, xlab = "Mean of x", main = "Distribution of Means of Simulated Samples")
+abline(v = zzom, col = "blue", lwd = 3)  # mean of our simulated samples
+abline(v = zzom, col = "red", lwd = 3)  # mean of our actual vector x
+abline(v = quantile(zomsamp$zombies_killed, 0.025), col = "blue")  # lower ci bound inferred by simulation
+abline(v = quantile(zomsamp$zombies_killed, 0.975), col = "blue")  # upper ci bound inferred by simulation
+text(x = quantile(zomsamp$zombies_killed, 0.025) + 0.25, y = 1000, "lower CI based on simulation", 
+     col = "blue", srt = 90, pos = 3)
+text(x = quantile(zomsamp$zombies_killed, 0.975) - 0.25, y = 1000, "upper CI based on simulation", 
+     col = "blue", srt = 90, pos = 3)
+
+zed<-mean(zomsamp$years_of_education)
+zed2<-zsd(zomsamp$years_of_education)
+quantile(zomsamp$zombies_killed, c(0.025, 0.975))
+hist(zomsamp$zombies_killed, xlab = "Mean of x", main = "Distribution of Means of Simulated Samples")
+abline(v = zed, col = "blue", lwd = 3)  # mean of our simulated samples
+abline(v = zed, col = "red", lwd = 3)  # mean of our actual vector x
+abline(v = quantile(zomsamp$years_of_education, 0.025), col = "blue")  # lower ci bound inferred by simulation
+abline(v = quantile(zomsamp$years_of_education, 0.975), col = "blue")  # upper ci bound inferred by simulation
+text(x = quantile(zomsamp$years_of_education, 0.025) + 0.25, y = 1000, "lower CI based on simulation", 
+     col = "blue", srt = 90, pos = 3)
+text(x = quantile(zomsamp$zombies_killed, 0.975) - 0.25, y = 1000, "upper CI based on simulation", 
+     col = "blue", srt = 90, pos = 3)
+```
+
+
