@@ -101,7 +101,7 @@ zom2<-standdev(d$zombies_killed)
 ed2<-standdev(d$years_of_education)
 ```
 
-### Use {ggplot} and make boxplots of each of these variable by gender.
+###2.a. Use {ggplot} and make boxplots of each of these variable by gender.
 ```{r}
 library(ggplot2)
 library(ggpubr)
@@ -133,7 +133,7 @@ figure <- ggarrange(phgt, pwgt, pag, pzom, ped,
 figure
 ```
 
-### Use {ggplot} and make scatterplots of height and weight in relation to age. 
+### 2.c.Use {ggplot} and make scatterplots of height and weight in relation to age. 
 ```{r}
 twoc<-ggplot(d, aes(x=weight, y=height, color=age)) + geom_point()
 twoc
@@ -141,7 +141,7 @@ twoc
 
 ### Do these variables seem to be related? In what way? Weight and height have a linear relationship. It also appears that on average older individuals are taller and weight more. 
 
-## Using histograms and Q-Q plots, check whether the quantitative variables seem to be drawn from a normal distribution. 
+## 2.d.Using histograms and Q-Q plots, check whether the quantitative variables seem to be drawn from a normal distribution. 
 
 ```{r}
 lhgt<-length(d$height)
@@ -187,7 +187,7 @@ qqline(d$years_of_education, col = "gray")
 
 ###Which seem to be and which do not? The numer of zombied killed and the years of education do not seem to be normally distributed.
 
-##Now use the sample() function to sample ONE subset of 30 zombies (without replacement) from this population and calculate the mean and sample standard deviation for each variable. Also estimate the standard error for each variable and construct the 95% confidence interval for each mean. Note that for the variables that are not drawn from the normal distribution, you will need to base your estimate of the CIs on some different distribution!
+##2.e. Now use the sample() function to sample ONE subset of 30 zombies (without replacement) from this population and calculate the mean and sample standard deviation for each variable. Also estimate the standard error for each variable and construct the 95% confidence interval for each mean. Note that for the variables that are not drawn from the normal distribution, you will need to base your estimate of the CIs on some different distribution!
 
 ```{r}
 library(dplyr)
@@ -205,52 +205,192 @@ zsd <- function(x) {
   sqrt(sum((x - mean(x))^2)/length(x)-1)
   }
 
+#Height confidence interval
 zhgt<-mean(zomsamp$height)
 zhgt2<-zsd(zomsamp$height)
-upper <- zhgt + qnorm(0.975, mean = 0, sd = zhgt2) * zse(x)
-lower <-zhgt + qnorm(0.025, mean = 0, sd = zhgt2) * zse(x)
+upper <- zhgt + qnorm(0.975, mean = 0, sd = zhgt2) * zse(zomsamp$heigh)
+lower <-zhgt + qnorm(0.025, mean = 0, sd = zhgt2) * zse(zomsamp$heigh)
 cihgt <- c(lower, upper)
 cihgt
-
+#Weight confidence interval
 zwgt<-mean(zomsamp$weight)
 zwgt2<-zsd(zomsamp$weight)
-upper <- zwgt + qnorm(0.975, mean = 0, sd = zwgt2) * zse(x)
-lower <-zwgt + qnorm(0.025, mean = 0, sd = zwgt2) * zse(x)
+upper <- zwgt + qnorm(0.975, mean = 0, sd = zwgt2) * zse(zomsamp$weight)
+lower <-zwgt + qnorm(0.025, mean = 0, sd = zwgt2) * zse(zomsamp$weight)
 ciwgt <- c(lower, upper)
 ciwgt
-
+#Age confidence interval
 zag<-mean(zomsamp$age)
 zag2<-zsd(zomsamp$age)
-upper <- zag + qnorm(0.975, mean = 0, sd = zag2) * zse(x)
-lower <-zag + qnorm(0.025, mean = 0, sd = zag2) * zse(x)
+upper <- zag + qnorm(0.975, mean = 0, sd = zag2) * zse(zomsamp$age)
+lower <-zag + qnorm(0.025, mean = 0, sd = zag2) * zse(zomsamp$age)
 cizag <- c(lower, upper)
 cizag
+```
 
+```{r}
+#Number of Zombies killed confidence interval
 zzom<-mean(zomsamp$zombies_killed)
 zzom2<-zsd(zomsamp$zombies_killed)
 quantile(zomsamp$zombies_killed, c(0.025, 0.975))
-hist(zomsamp$zombies_killed, xlab = "Mean of x", main = "Distribution of Means of Simulated Samples")
-abline(v = zzom, col = "blue", lwd = 3)  # mean of our simulated samples
-abline(v = zzom, col = "red", lwd = 3)  # mean of our actual vector x
-abline(v = quantile(zomsamp$zombies_killed, 0.025), col = "blue")  # lower ci bound inferred by simulation
-abline(v = quantile(zomsamp$zombies_killed, 0.975), col = "blue")  # upper ci bound inferred by simulation
-text(x = quantile(zomsamp$zombies_killed, 0.025) + 0.25, y = 1000, "lower CI based on simulation", 
+sim <- NULL  
+n <- 1
+for (i in 1:10000) {
+  sim[i] <- sample(zomsamp$zombies_killed, n, replace = TRUE)
+  } #CI with bootstrapping
+normalCI = function(x, CIlevel = 0.95) {
+  ci = mean(zomsamp$zombies_killed) + c(-1, 1) * qnorm(1 - (1 - CIlevel)/2) * sqrt(var(zomsamp$zombies_killed)/length(zomsamp$zombies_killed))
+  return(ci) 
+  } #normal cI function
+hist(sim, xlab = "Mean of x", main = "Distribution of Means of Simulated Samples")
+abline(v = mean(sim), col = "blue", lwd = 3)  # mean of our simulated samples
+abline(v = mean(zomsamp$zombies_killed), col = "red", lwd = 3)  # mean of our actual vector x
+abline(v = quantile(sim, 0.025), col = "blue")  # lower ci bound inferred by simulation
+abline(v = quantile(sim, 0.975), col = "blue")  # upper ci bound inferred by simulation
+text(x = quantile(sim, 0.025) + 0.25, y = 1000, "lower CI based on simulation", 
      col = "blue", srt = 90, pos = 3)
-text(x = quantile(zomsamp$zombies_killed, 0.975) - 0.25, y = 1000, "upper CI based on simulation", 
+text(x = quantile(sim, 0.975) - 0.25, y = 1000, "upper CI based on simulation", 
      col = "blue", srt = 90, pos = 3)
-
-zed<-mean(zomsamp$years_of_education)
-zed2<-zsd(zomsamp$years_of_education)
-quantile(zomsamp$zombies_killed, c(0.025, 0.975))
-hist(zomsamp$zombies_killed, xlab = "Mean of x", main = "Distribution of Means of Simulated Samples")
-abline(v = zed, col = "blue", lwd = 3)  # mean of our simulated samples
-abline(v = zed, col = "red", lwd = 3)  # mean of our actual vector x
-abline(v = quantile(zomsamp$years_of_education, 0.025), col = "blue")  # lower ci bound inferred by simulation
-abline(v = quantile(zomsamp$years_of_education, 0.975), col = "blue")  # upper ci bound inferred by simulation
-text(x = quantile(zomsamp$years_of_education, 0.025) + 0.25, y = 1000, "lower CI based on simulation", 
-     col = "blue", srt = 90, pos = 3)
-text(x = quantile(zomsamp$zombies_killed, 0.975) - 0.25, y = 1000, "upper CI based on simulation", 
-     col = "blue", srt = 90, pos = 3)
+quantile(sim, c(0.025, 0.975))  # the quantile() function returns the value of x for a specified quantile
+ci <- normalCI(zomsamp$zombies_killed, 0.95) 
+abline(v = ci[1], col = "red")  # calculated lower ci bound based on the se of our vector and assuming that our observations are drawn from a normal distribution
+abline(v = ci[2], col = "red")  # calculated upper ci bound based on the se of our vector and assuming that our observations are drawn from a normal distribution
+text(x = ci[1] - 0.25, y = 1000, "lower CI based on normal distribution", col = "red", 
+     srt = 90, pos = 3)
+text(x = ci[2] + 0.25, y = 1000, "upper CI based on normal distribution", col = "red", 
+     srt = 90, pos = 3)
 ```
 
+```{r}
+#Years educated confidence interval
+zed<-mean(zomsamp$years_of_education)
+zed2<-zsd(zomsamp$years_of_education)
+quantile(zomsamp$years_of_education, c(0.025, 0.975))
+sim2 <- NULL  
+n <- 1
+for (i in 1:10000) {
+  sim2[i] <- sample(zomsamp$years_of_education, n, replace = TRUE)
+  }#CI with bootstrapping
+normalCI = function(x, CIlevel = 0.95) {
+  ci = mean(zomsamp$years_of_education) + c(-1, 1) * qnorm(1 - (1 - CIlevel)/2) * sqrt(var(zomsamp$years_of_education)/length(zomsamp$years_of_education))
+  return(ci)
+  }
+hist(sim2, xlab = "Mean of x", main = "Distribution of Means of Simulated Samples")
+abline(v = mean(sim2), col = "blue", lwd = 3)  # mean of our simulated samples
+abline(v = mean(zomsamp$years_of_education), col = "red", lwd = 3)  # mean of our actual vector x
+abline(v = quantile(sim2, 0.025), col = "blue")  # lower ci bound inferred by simulation
+abline(v = quantile(sim2, 0.975), col = "blue")  # upper ci bound inferred by simulation
+text(x = quantile(sim2, 0.025) + 0.25, y = 1000, "lower CI based on simulation", 
+     col = "blue", srt = 90, pos = 3)
+text(x = quantile(sim, 0.975) - 0.25, y = 1000, "upper CI based on simulation", 
+     col = "blue", srt = 90, pos = 3)
+quantile(sim2, c(0.025, 0.975))  # the quantile() function returns the value of x for a specified quantile
+ci <- normalCI(zomsamp$years_of_education, 0.95) 
+abline(v = ci[1], col = "red")  # calculated lower ci bound based on the se of our vector and assuming that our observations are drawn from a normal distribution
+abline(v = ci[2], col = "red")  # calculated upper ci bound based on the se of our vector and assuming that our observations are drawn from a normal distribution
+text(x = ci[1] - 0.25, y = 1000, "lower CI based on normal distribution", col = "red", 
+     srt = 90, pos = 3)
+text(x = ci[2] + 0.25, y = 1000, "upper CI based on normal distribution", col = "red", 
+     srt = 90, pos = 3)
+```
+
+##2.f. Now draw 99 more random samples of 30 zombies out and calculate the mean for each of the these samples. Together with the first sample you drew out, you now have a set of 100 means for each variable (each based on 30 observations), which constitutes a sampling distribution for each variable. What are the means and standard deviations of the sampling distribution for each variable? How do the standard deviations compare to the standard errors estimated in [2.e.]? What do these sampling distributions look like? Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution?
+
+```{r}
+#draw 99 more random samples of 30 zombies out
+zomsamp2<-NULL
+zomsamp2[[i]]<-NULL
+for (i in c(1:99)) {
+  zomsamp2[[i]]<- sample_n(d, 30, replace = TRUE)
+  }  
+```
+###calculate the mean for each of the these samples
+```{r}
+
+zomsamp2<-as.data.frame(zomsamp2)
+wow<-dplyr::select_if(zomsamp2, is.numeric)
+wow<-sapply(wow, mean) #takes mean
+wow<-t(wow) #transpose
+wow<-as.data.frame(wow)
+zomweight<- wow[,grep("weight", colnames(wow))] 
+zomweight #mean weight
+zomheight<-wow[,grep("height", colnames(wow))] 
+zomheight #mean height
+zomag<-wow[,grep("age", colnames(wow))] 
+zomag #mean age
+zomzom<-wow[,grep("zombies_killed", colnames(wow))] 
+zomzom #mean zombies killed
+zomed<-wow[,grep("years_of_education", colnames(wow))] 
+zomed#mean years educated
+```
+###What are the means and standard deviations of the sampling distribution for each variable?
+```{r}
+#What are the means and standard deviations of the sampling distribution for each variable?
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+#totals for each variable, old+new
+tzomweight<-sum(zomsamp2[,grep("weight", colnames(zomsamp2))]) + sum(zomsamp$weight)
+tzomheight<-sum(zomsamp2[,grep("height", colnames(zomsamp2))]) + sum(zomsamp$height) 
+tzomag<-sum(zomsamp2[,grep("age", colnames(zomsamp2))]) + sum(zomsamp$age) 
+tzomzom<-sum(zomsamp2[,grep("zombies_killed", colnames(zomsamp2))]) + sum(zomsamp$zombies_killed)
+tzomed<-sum(zomsamp2[,grep("years_of_education", colnames(zomsamp2))]) + sum(zomsamp$years_of_education) 
+# Means for each variable
+z1<-(tzomweight)/3000
+z1 #mean weight
+z2<-(tzomheight)/3000
+z2 #mean height
+z3<-(tzomag)/3000
+z3 #mean age
+z4<-(tzomzom)/3000
+z4 #mean zombies killed
+z5<-(tzomed)/3000
+z5 #mean years educated
+
+```
+###Sd for each variable
+```{r}
+##unite old+new samples into a matrix
+tzomweight2<-cbind(zomsamp2[,grep("weight", colnames(zomsamp2))], zomsamp$weight) 
+tzomheight2<-cbind(zomsamp2[,grep("height", colnames(zomsamp2))], zomsamp$height)
+tzomage2<-cbind(zomsamp2[,grep("age", colnames(zomsamp2))], zomsamp$age)
+tzomzom2<-cbind(zomsamp2[,grep("zombies_killed", colnames(zomsamp2))], zomsamp$zombies_killed)
+tzomed2<-cbind(zomsamp2[,grep("years_of_education", colnames(zomsamp2))], zomsamp$years_of_education) 
+#gather into one matrix column
+tzomweight2<-gather(tzomweight2)
+tzomweight2<-dplyr::select_if(tzomweight2, is.numeric)
+tzomweight2<-as.matrix(tzomweight2)
+          
+tzomheight2<-gather(tzomheight2) 
+tzomheight2<-dplyr::select_if(tzomheight2, is.numeric)
+tzomheight2<-as.matrix(tzomheight2)
+
+tzomage2<-gather(tzomage2) 
+tzomage2<- dplyr::select_if(tzomage2, is.numeric)
+tzomage2<-as.matrix(tzomage2)
+
+tzomzom2<-gather(tzomzom2) 
+tzomzom2<- dplyr::select_if(tzomzom2, is.numeric)
+tzomzom2<-as.matrix(tzomzom2)
+
+tzomed2<-gather(tzomed2) 
+tzomed2<-  dplyr::select_if(tzomed2, is.numeric)
+tzomed2<-as.matrix(tzomed2)
+
+#Sd funtion
+zomsd <- function(x) {
+  sqrt(sum((x - mean(x))^2)/100-1)
+}
+#calculate sd for each variable
+z6<-zomsd(tzomweight2)
+z6 #sd weight
+z7<-zomsd(tzomheight2)
+z7 #sd height
+z8<-zomsd(tzomage2)
+z8 #sd age
+z9<-zomsd(tzomzom2)
+z9 #sd xombies killed
+z10<-zomsd(tzomed2)
+z10 #sd education
+```
 
