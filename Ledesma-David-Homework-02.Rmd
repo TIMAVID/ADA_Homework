@@ -419,22 +419,22 @@ z10
 ##What do these sampling distributions look like?
 ```{r}
 par(mfrow = c(2, 2))
-hist(tzomweight2, probability = TRUE)
+hist(tzomweight2)
 qqnorm(tzomweight2, main = "Normal QQ plot Weight")
 qqline(tzomweight2, col = "gray")
 
 par(mfrow = c(2, 2))
-hist(tzomheight2, probability = TRUE)
+hist(tzomheight2)
 qqnorm(tzomheight2, main = "Normal QQ plot Height")
 qqline(tzomheight2, col = "gray")
 
 par(mfrow = c(2, 2))
-hist(tzomage2, probability = TRUE)
+hist(tzomage2)
 qqnorm(tzomage2, main = "Normal QQ plot Age")
 qqline(tzomage2, col = "gray")
 
 par(mfrow = c(2, 2))
-hist(tzomzom2, probability = TRUE)
+hist(tzomzom2)
 qqnorm(tzomzom2, main = "Normal QQ plot Zombies killed")
 qqline(tzomzom2, col = "gray")
 
@@ -446,7 +446,7 @@ qqline(tzomed2, col = "gray")
 
 ##Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution?
 
-All are normally distributed except for the years educated and the number of zombies killed.
+##All are normally distributed except for the years educated and the number of zombies killed.
 
 
 
