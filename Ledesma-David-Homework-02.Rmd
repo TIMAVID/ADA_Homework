@@ -55,7 +55,7 @@ barplot(poisdist, names.arg = y,
 simulation <- rpois(104, l)
 ```
 
-###1.f. Plot the simulated results using hist() and use xlim() to set the horizontal limits to be from 0 to 30. How does your histogram compare to the shape of the probability mass function you plotted above?
+###1.f. Plot the simulated results using hist() and use xlim() to set the horizontal limits to be from 0 to 30. How does your histogram compare to the shape of the probability mass function you plotted above? Similar but more noticably right skewed.
 ```{r}
 hist(simulation, xlim = c(0,30))
 ```
@@ -196,14 +196,14 @@ zomsamp<-sample_n(d, 30, replace = FALSE) #sample ONE subset of 30 zombies (with
 
 zsv <- function(x) {
   sum((x - mean(x))^2)/length(x)-1
-  }
+  } #variation
 zse <- function(x) {
   sqrt(zsv(x))/length(x)
-  }
+  }#standard error
 
 zsd <- function(x) {
   sqrt(sum((x - mean(x))^2)/length(x)-1)
-  }
+  } #standard deviation
 
 #Height confidence interval
 zhgt<-mean(zomsamp$height)
@@ -233,6 +233,7 @@ cizag
 zzom<-mean(zomsamp$zombies_killed)
 zzom2<-zsd(zomsamp$zombies_killed)
 quantile(zomsamp$zombies_killed, c(0.025, 0.975))
+zse(zomsamp$zombies_killed)
 sim <- NULL  
 n <- 1
 for (i in 1:10000) {
@@ -266,6 +267,7 @@ text(x = ci[2] + 0.25, y = 1000, "upper CI based on normal distribution", col = 
 zed<-mean(zomsamp$years_of_education)
 zed2<-zsd(zomsamp$years_of_education)
 quantile(zomsamp$years_of_education, c(0.025, 0.975))
+zse(zomsamp$years_of_education)
 sim2 <- NULL  
 n <- 1
 for (i in 1:10000) {
@@ -335,7 +337,11 @@ tzomheight<-sum(zomsamp2[,grep("height", colnames(zomsamp2))]) + sum(zomsamp$hei
 tzomag<-sum(zomsamp2[,grep("age", colnames(zomsamp2))]) + sum(zomsamp$age) 
 tzomzom<-sum(zomsamp2[,grep("zombies_killed", colnames(zomsamp2))]) + sum(zomsamp$zombies_killed)
 tzomed<-sum(zomsamp2[,grep("years_of_education", colnames(zomsamp2))]) + sum(zomsamp$years_of_education) 
-# Means for each variable
+
+```
+### Means for each variable
+```{r}
+
 z1<-(tzomweight)/3000
 z1 #mean weight
 z2<-(tzomheight)/3000
@@ -346,8 +352,8 @@ z4<-(tzomzom)/3000
 z4 #mean zombies killed
 z5<-(tzomed)/3000
 z5 #mean years educated
-
 ```
+
 ###Sd for each variable
 ```{r}
 ##unite old+new samples into a matrix
@@ -393,4 +399,55 @@ z9 #sd xombies killed
 z10<-zomsd(tzomed2)
 z10 #sd education
 ```
+##How do the standard deviations compare to the standard errors estimated in [2.e.]?
+```{r}
+zse(zomsamp$heigh)
+z7
+
+zse(zomsamp$weight)
+z6
+
+zse(zomsamp$age)
+z8
+
+zse(zomsamp$zombies_killed)
+z9
+
+zse(zomsamp$years_of_education)
+z10
+```
+##What do these sampling distributions look like?
+```{r}
+par(mfrow = c(2, 2))
+hist(tzomweight2, probability = TRUE)
+qqnorm(tzomweight2, main = "Normal QQ plot Weight")
+qqline(tzomweight2, col = "gray")
+
+par(mfrow = c(2, 2))
+hist(tzomheight2, probability = TRUE)
+qqnorm(tzomheight2, main = "Normal QQ plot Height")
+qqline(tzomheight2, col = "gray")
+
+par(mfrow = c(2, 2))
+hist(tzomage2, probability = TRUE)
+qqnorm(tzomage2, main = "Normal QQ plot Age")
+qqline(tzomage2, col = "gray")
+
+par(mfrow = c(2, 2))
+hist(tzomzom2, probability = TRUE)
+qqnorm(tzomzom2, main = "Normal QQ plot Zombies killed")
+qqline(tzomzom2, col = "gray")
+
+par(mfrow = c(2, 2))
+hist(tzomed2)
+qqnorm(tzomed2, main = "Normal QQ plot Education")
+qqline(tzomed2, col = "gray")
+```
+
+##Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution?
+
+All are normally distributed except for the years educated and the number of zombies killed.
+
+
+
 
